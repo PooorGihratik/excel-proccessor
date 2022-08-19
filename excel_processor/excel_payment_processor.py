@@ -20,13 +20,15 @@ class ProcessorOptions:
     file_extension: str
     overall_file_name: str
     output_file_name: str
+    overall_output_file: str
     sheets: list[SheetRegisterOption]
 
 
-class ExcelPaymentProcessor(UIWrapable[UIExcelWrapper]):
+class ExcelPaymentProcessor(UIWrapable):
     _config = ProcessorOptions(
-        output_file_name='расшифровка банка',
-        overall_file_name='Overall',
+        output_file_name='Расшифровка банка',
+        overall_file_name='Лицевые счета',
+        overall_output_file="Лицевые счета - вывод",
         file_extension='.xlsx',
         sheets=[
             # Utility
@@ -47,6 +49,7 @@ class ExcelPaymentProcessor(UIWrapable[UIExcelWrapper]):
     )
 
     def __init__(self, config: ProcessorOptions = None):
+        super().__init__(UIExcelWrapper)
         if config is not None:
             self.load_options(config)
 
@@ -60,30 +63,45 @@ class ExcelPaymentProcessor(UIWrapable[UIExcelWrapper]):
     _registerer_dict: dict[str, PaymentWorkbookRegister] = {}
     _count = 0
 
+    @property
     def is_workbooks_loaded(self):
         return self._overall_read_workbook and self._overall_write_workbook and self._generated_workbook
-    
-    def load_workbooks(self):
-        self._overall_read_workbook = load_workbook(
-            filename=self._config.overall_file_name + self._config.file_extension,
-            data_only=True,
-            read_only=True
-        )
-        
-        self._overall_write_workbook = load_workbook(
-            filename=self._config.overall_file_name + self._config.file_extension
-        )
 
-        for sheet_params in self._config.sheets:
-            self._registerer_dict[sheet_params.account] = PaymentWorkbookRegister(
-                self._overall_read_workbook.worksheets[sheet_params.target_sheet_index],
-                self._overall_write_workbook.worksheets[sheet_params.payments_sheet_index],
-                self._overall_write_workbook.worksheets[sheet_params.dept_sheet_index]
+    @property
+    def overall_book_name(self):
+        return self._config.overall_file_name + self._config.file_extension
+
+    @property
+    def overall_output_book_name(self):
+        return self._config.overall_output_file + self._config.file_extension
+
+    @property
+    def output_book_name(self):
+        return self._config.output_file_name + self._config.file_extension
+
+    def load_workbooks(self):
+        with self._ui_wrapper.loading_overall(self.overall_book_name):
+            self._overall_read_workbook = load_workbook(
+                filename=self.overall_book_name,
+                data_only=True,
+                read_only=True
             )
 
-        self._generated_workbook = Workbook()
-        self._generated_workbook.remove(self._generated_workbook.worksheets[0])
-        self._payment_sheet_generator.workbook = self._generated_workbook
+            self._overall_write_workbook = load_workbook(
+                filename=self.overall_book_name
+            )
+
+            for sheet_params in self._config.sheets:
+                self._registerer_dict[sheet_params.account] = PaymentWorkbookRegister(
+                    self._overall_read_workbook.worksheets[sheet_params.target_sheet_index],
+                    self._overall_write_workbook.worksheets[sheet_params.payments_sheet_index],
+                    self._overall_write_workbook.worksheets[sheet_params.dept_sheet_index]
+                )
+
+        with self._ui_wrapper.create_output_workbook(self.output_book_name):
+            self._generated_workbook = Workbook()
+            self._generated_workbook.remove(self._generated_workbook.worksheets[0])
+            self._payment_sheet_generator.workbook = self._generated_workbook
 
     def close_workbooks(self):
         self._overall_read_workbook.close()
@@ -94,11 +112,13 @@ class ExcelPaymentProcessor(UIWrapable[UIExcelWrapper]):
         self._registerer_dict = {}
 
     def save_workbooks(self):
-        self._generated_workbook.save(filename=self._config.output_file_name + self._config.file_extension)
-        self._overall_write_workbook.save(filename=self._config.overall_file_name + self._config.file_extension)
+        with self._ui_wrapper.save_book(self.output_book_name):
+            self._generated_workbook.save(filename=self.output_book_name)
+        with self._ui_wrapper.save_book(self.overall_output_book_name):
+            self._overall_write_workbook.save(filename=self.overall_output_book_name)
 
     def register_sections(self, payments_sections: list[PaymentSection]):
-        if not self.is_workbooks_loaded():
+        if not self.is_workbooks_loaded:
             self.load_workbooks()
 
         for section in payments_sections:
@@ -108,21 +128,31 @@ class ExcelPaymentProcessor(UIWrapable[UIExcelWrapper]):
                     # TODO: make an dept direction
                     if payment.period.year == 22: 
                         registerer.add_payment(payment)
+                    self._ui_wrapper.payment_process_advance()
             self._payment_sheet_generator.add_payment_section(section)
 
     def process_files(self, directory: str):
-        file_parser = PaymentFileParser(directory)
+        self._ui_wrapper.status_load_workbooks()
         self.load_workbooks()
+
+        self._ui_wrapper.status_load_files()
+        file_parser = PaymentFileParser(directory)
         payment_data = file_parser.parse_all_files_in_directory()
+
         sum_payments = {}
         for key in payment_data.keys():
             sum_payments[key] = 0
+
+        self._ui_wrapper.status_distribute_payments()
+        self._ui_wrapper.payment_start_progress(payment_data)
         for item in payment_data.values():
             for section in item:
                 for info in section.payment_items:
                     sum_payments[section.account] += info.payment
             self.register_sections(item)
-        print(sum_payments)
+
+        self._ui_wrapper.final_sum(sum_payments)
         self.save_workbooks()
         self.close_workbooks()
+        self._ui_wrapper.done_print()
         
