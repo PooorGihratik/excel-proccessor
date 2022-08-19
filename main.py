@@ -4,8 +4,6 @@ from excel_processor import ExcelPaymentProcessor
 
 processor = ExcelPaymentProcessor()
 processor.process_files('Files')
-print("Готово!")
-input("Нажми enter, чтобы закрыть консоль ;)")
 
 # Старый код (не работает)
 # ------------------------------------------

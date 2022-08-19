@@ -2,6 +2,7 @@ from .payment_file_parser import PaymentFileParser
 from .payment_workbook_register import PaymentWorkbookRegister
 from .common import PaymentSection
 from .payment_sheet_generator import PaymentSheetGenerator
+from .ui_wrappers import UIExcelWrapper, UIWrapable
 from openpyxl import Workbook, load_workbook
 from dataclasses import dataclass
 
@@ -22,7 +23,7 @@ class ProcessorOptions:
     sheets: list[SheetRegisterOption]
 
 
-class ExcelPaymentProcessor:
+class ExcelPaymentProcessor(UIWrapable[UIExcelWrapper]):
     _config = ProcessorOptions(
         output_file_name='расшифровка банка',
         overall_file_name='Overall',
