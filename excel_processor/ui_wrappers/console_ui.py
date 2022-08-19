@@ -122,6 +122,7 @@ class LoadingContext:
 
     def __enter__(self):
         self._ui_item.start_loading(self.display_text)
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._ui_item.end_loading(self.complete_text)

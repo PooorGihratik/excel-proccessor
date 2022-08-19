@@ -58,8 +58,8 @@ class PaymentWorkbookRegister:
 
     # Overall workbook
     # -----------------------------------------
-    _overall_read_workbook: Workbook
-    _overall_write_workbook: Workbook
+    _overall_read_workbook: Workbook = None
+    _overall_write_workbook: Workbook = None
     _registerer_dict: dict[str, PaymentSheetRegister] = {}
 
     @property
@@ -102,7 +102,7 @@ class PaymentWorkbookRegister:
 
     # Bank parser workbook
     # -----------------------------------------
-    _bank_workbook: Workbook
+    _bank_workbook: Workbook = None
     _payment_sheet_generator = PaymentSheetGenerator()
 
     @property

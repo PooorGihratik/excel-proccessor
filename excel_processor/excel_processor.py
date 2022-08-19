@@ -50,7 +50,8 @@ class ProcessorUI(UIWrapable):
         self._ui_wrapper.status_save_workbook()
         with self._ui_wrapper.save_book(self._payment_processor.bank_workbook_name):
             self._payment_processor.save_bank_workbook()
-        with self._ui_wrapper.save_book(self._payment_processor.overall_output_book_name):
-            self._payment_processor.save_overall()
+        if self._payment_processor.is_overall_loaded:
+            with self._ui_wrapper.save_book(self._payment_processor.overall_output_book_name):
+                self._payment_processor.save_overall()
 
         self._ui_wrapper.done_print()
