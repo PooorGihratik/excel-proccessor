@@ -15,7 +15,7 @@ class PaymentFileParser:
         self.target_directory = target_directory
 
     def get_file_names(self) -> list[str]:
-        return [item.name for item in list((Path('..') / self.target_directory).glob('*.txt'))]
+        return [item.name for item in list((Path('../..') / self.target_directory).glob('*.txt'))]
 
     def get_account_names(self) -> list[str]:
         return [get_account_key(item) for item in self.get_file_names()]

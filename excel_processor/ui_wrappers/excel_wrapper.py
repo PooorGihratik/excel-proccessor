@@ -1,5 +1,5 @@
 from .ui_wrapper import UIWrapper, LoadingContext
-from ..common import PaymentSection, PaymentInfo
+from ..core import PaymentSection
 
 
 class UIExcelWrapper(UIWrapper):
@@ -47,7 +47,10 @@ class UIExcelWrapper(UIWrapper):
         pass
 
     def done_print(self):
-        self.ui_item.print("Готово!")
+        self.ui_item.rule("Готово!")
+
+    def error_print(self):
+        self.ui_item.error("Произошла неизвестная ошибка. Выполнение программы прекращено.")
 
     # Statuses
     # ------------------------------------

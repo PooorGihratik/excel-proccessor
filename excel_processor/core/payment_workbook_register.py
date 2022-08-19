@@ -4,7 +4,7 @@ from .common import PaymentInfo
 import math
 
 
-class PaymentWorkbookRegister:
+class PaymentSheetRegister:
     _target_sheet: Worksheet
     _payment_sheet: Worksheet
     _dept_sheet: Worksheet

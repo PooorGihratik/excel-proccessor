@@ -21,9 +21,28 @@ class ConsoleUI:
     _progress_color = "[bold cyan]"
     _print_color = "[bold green]"
     _rule_color = "[bold orange]"
+    _error_color = "[bold red]"
 
     def __init__(self):
         self._console = Console()
+
+    def display_welcome_text(self):
+        self._console.print("""
+        [magenta]
+           ___                                 _       __            _     _             
+          / _ \\__ _ _   _ _ __ ___   ___ _ __ | |_    /__\\ ___  __ _(_)___| |_ ___ _ __  
+         / /_)/ _` | | | | '_ ` _ \\ / _ \\ '_ \\| __|  / \\/// _ \\/ _` | / __| __/ _ \\ '__| 
+        / ___/ (_| | |_| | | | | | |  __/ | | | |_  / _  \\  __/ (_| | \\__ \\ ||  __/ |    
+        \\/    \\__,_|\\__, |_| |_| |_|\\___|_| |_|\\__| \\/ \\_/\\___|\\__, |_|___/\\__\\___|_|    
+                    |___/                                      |___/                     
+         _               ___                              
+        | |__  _   _    / __\\   _ _ __ _   _ ___    /\\ /\\ 
+        | '_ \\| | | |  / / | | | | '__| | | / __|  / //_/ 
+        | |_) | |_| | / /__| |_| | |  | |_| \\__ \\ / __ \\_ 
+        |_.__/ \\__, | \\____/\\__, |_|   \\__,_|___/ \\/  \\(_)
+               |___/        |___/                         
+        [magenta]
+        """)
 
     def start_loading(self, content: str):
         self._status = self._console.status(f"{self._progress_color}{content}...", spinner=self._spinner_type)
@@ -71,6 +90,9 @@ class ConsoleUI:
     def print(self, content: str):
         self._console.print(f"{self._print_color}{content}")
 
+    def error(self, content: str):
+        self._console.print(f"{self._error_color}{content}")
+
     def rule(self, content: str):
         self._console.rule(f"{self._rule_color}{content}")
 
@@ -85,20 +107,21 @@ class ConsoleUI:
                 table.add_row(key, *value)
             except TypeError:
                 table.add_row(key, str(value))
-        self._console.print(table, justify='left')
+        self._console.print(table, justify='center')
+
 
 class LoadingContext:
     _ui_item: ConsoleUI
-    _display_text: str
-    _complete_text: str
+    display_text: str
+    complete_text: str
 
     def __init__(self, display_text: str, complete_text: str, console_ui: ConsoleUI):
         self._ui_item = console_ui
-        self._display_text = display_text
-        self._complete_text = complete_text
+        self.display_text = display_text
+        self.complete_text = complete_text
 
     def __enter__(self):
-        self._ui_item.start_loading(self._display_text)
+        self._ui_item.start_loading(self.display_text)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._ui_item.end_loading(self._complete_text)
+        self._ui_item.end_loading(self.complete_text)
