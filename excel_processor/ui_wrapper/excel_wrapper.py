@@ -66,6 +66,9 @@ class UIExcelWrapper(UIWrapper):
     def done_print(self):
         self.ui_item.rule("Готово!")
 
+    def no_payments(self):
+        self.ui_item.print("Нечего добавлять (В директории нет файлов)")
+
     def error_print(self):
         self.ui_item.error("Произошла неизвестная ошибка. Выполнение программы прекращено.")
 
