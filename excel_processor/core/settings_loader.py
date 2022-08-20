@@ -11,7 +11,7 @@ def remove_comments(line: str) -> str:
 def load_settings(file_name: str) -> dict[str, str]:
     settings = {}
     file_path = (Path('.') / file_name)
-    with file_path.open(mode='r') as file:
+    with file_path.open(mode='r', encoding="utf-8") as file:
         for line in file.readlines():
             line = remove_comments(line)
             items = line.replace('\n', '').split("=")
