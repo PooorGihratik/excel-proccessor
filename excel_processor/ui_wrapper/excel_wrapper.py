@@ -1,5 +1,6 @@
 from .ui_wrapper import UIWrapper, LoadingContext
 from ..core import PaymentSection
+from typing import TextIO
 
 
 class UIExcelWrapper(UIWrapper):
@@ -33,9 +34,6 @@ class UIExcelWrapper(UIWrapper):
     def payment_process_advance(self):
         self.ui_item.progress_advance(self._payment_process_name, 1)
 
-    def payment_advance(self):
-        pass
-
     # Tables
     # ------------------------------------
     def final_sum(self, sums: dict[str, float]):
@@ -45,6 +43,25 @@ class UIExcelWrapper(UIWrapper):
     # ------------------------------------
     def payment_section_progress(self, section: PaymentSection):
         pass
+
+    def text_file_print(self, file: TextIO, account: str, sections: list[PaymentSection]):
+        count = len([info for section in sections for info in section.payment_items])
+
+        result_str = ''
+        if count % 100 in [11, 12, 13, 14, 15, 16, 17, 18, 19]:
+            result_str = f'Найдено {count} платежей'
+        elif count % 10 == 1:
+            if count == 1:
+                result_str = f'Найден {count} платеж'
+            else:
+                result_str = f'Найдено {count} платеж'
+        elif count % 10 in [2, 3, 4]:
+            result_str = f'Найдено {count} платежа'
+        elif count % 10 in [0, 5, 6, 7, 8, 9]:
+            result_str = f'Найдено {count} платежей'
+
+        self.ui_item.normal_print(f"[green]Файл [bold]{file.name}[/bold] загружен:")
+        self.ui_item.normal_print(f"[magenta]{result_str} на счет {account}")
 
     def done_print(self):
         self.ui_item.rule("Готово!")

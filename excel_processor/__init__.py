@@ -1,2 +1,2 @@
 from .excel_processor import ProcessorUI
-from .ui_wrappers import ConsoleUI, MockUI
+from .ui_wrapper import ConsoleUI, MockUI

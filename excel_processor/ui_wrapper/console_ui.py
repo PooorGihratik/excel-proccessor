@@ -41,7 +41,7 @@ class ConsoleUI:
         | |_) | |_| | / /__| |_| | |  | |_| \\__ \\ / __ \\_ 
         |_.__/ \\__, | \\____/\\__, |_|   \\__,_|___/ \\/  \\(_)
                |___/        |___/                         
-        [magenta]
+        [/magenta]
         """)
 
     def start_loading(self, content: str):
@@ -89,6 +89,9 @@ class ConsoleUI:
 
     def print(self, content: str):
         self._console.print(f"{self._print_color}{content}")
+
+    def normal_print(self, content: str):
+        self._console.print(f"{content}")
 
     def error(self, content: str):
         self._console.print(f"{self._error_color}{content}")

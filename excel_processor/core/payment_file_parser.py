@@ -6,6 +6,7 @@ from .common import (
     PaymentSection
 )
 from pathlib import Path
+from typing import Callable, TextIO
 
 
 class PaymentFileParser:
@@ -20,7 +21,11 @@ class PaymentFileParser:
     def get_account_names(self) -> list[str]:
         return [get_account_key(item) for item in self.get_file_names()]
 
-    def parse_all_files_in_directory(self) -> dict[str, list[PaymentSection]]:
+    def parse_all_files_in_directory(
+            self,
+            file_callback: Callable[[TextIO, str, list[PaymentSection]], None] = None,
+            info_callback: Callable[[PaymentInfo], None] = None
+    ) -> dict[str, list[PaymentSection]]:
         files_dict = {}
        
         for file_name in self.get_account_names():
@@ -40,7 +45,7 @@ class PaymentFileParser:
             # Content
             for line in lines:
                 line_items = line.replace(u'\xa0', '').split(';')
-                section_item.payment_items.append(PaymentInfo(
+                info = PaymentInfo(
                     date=convert_str_to_date(line_items[0]),
                     apartment=int(line_items[5]),
                     fullname=line_items[6],
@@ -48,9 +53,14 @@ class PaymentFileParser:
                     full_payment=float(line_items[9].replace(',', '.')),
                     payment=float(line_items[10].replace(',', '.')),
                     percent=float(line_items[11].replace(',', '.'))
-                ))
+                )
+                if info_callback is not None:
+                    info_callback(info)
+                section_item.payment_items.append(info)
             if get_account_key(file_path.name) not in files_dict:
                 files_dict[get_account_key(file_path.name)] = []
             files_dict[get_account_key(file_path.name)].append(section_item)
+            if file_callback is not None:
+                file_callback(file, get_account_key(file_path.name), files_dict[get_account_key(file_path.name)])
             file.close()
         return files_dict

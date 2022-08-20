@@ -1,4 +1,4 @@
-from .ui_wrappers import UIExcelWrapper, UIWrapable
+from .ui_wrapper import UIExcelWrapper, UIWrapable
 from .core import (
     PaymentFileParser,
     ProcessorOptions,
@@ -16,7 +16,7 @@ class ProcessorUI(UIWrapable):
         if config is not None:
             self._payment_processor.load_options(config)
 
-    def info_callback(self, info: PaymentInfo):
+    def info_process_callback(self, info: PaymentInfo):
         self._ui_wrapper.payment_process_advance()
 
     def section_callback(self, section: PaymentSection):
@@ -36,13 +36,15 @@ class ProcessorUI(UIWrapable):
 
         self._ui_wrapper.status_load_files()
         file_parser = PaymentFileParser(directory)
-        payment_data = file_parser.parse_all_files_in_directory()
+        payment_data = file_parser.parse_all_files_in_directory(
+            file_callback=self._ui_wrapper.text_file_print
+        )
 
         self._ui_wrapper.status_distribute_payments()
         self._ui_wrapper.payment_start_progress(payment_data)
         sum_payments = self._payment_processor.distribute_payments(
             payment_data,
-            info_callback=self.info_callback,
+            info_callback=self.info_process_callback,
             section_callback=self.section_callback
         )
         self._ui_wrapper.final_sum(sum_payments)
