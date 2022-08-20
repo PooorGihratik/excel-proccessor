@@ -15,7 +15,7 @@ from rich.table import Table
 class ConsoleUI:
     _console: Console
     _status: Status
-    _spinner_type = 'clock'
+    _spinner_type = 'bouncingBar'
 
     _complete_color = "[bold green]"
     _progress_color = "[bold cyan]"
@@ -56,7 +56,7 @@ class ConsoleUI:
     _progress: Progress = None
     _tasks: dict[str, Task] = {}
     _progress_style = (
-        SpinnerColumn('clock'),
+        SpinnerColumn('bouncingBar'),
         TextColumn("{task.description}"),
         BarColumn(bar_width=None),
         'Прошло времени:',
